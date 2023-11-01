@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Threading.Tasks;
 
 using AAEmu.Game.Core.Managers;
 using AAEmu.Game.Core.Managers.AAEmu.Game.Core.Managers;
@@ -771,7 +772,9 @@ public class Npc : Unit
                 mate.AddExp(KillExp);
                 character.SendMessage($"Pet gained {KillExp} XP");
             }
-            character.Quests.OnKill(this);
+            //character.Quests.OnKill(this);
+            // инициируем событие
+            Task.Run(() => QuestManager.Instance.DoOnMonsterHuntEvents(character, this));
         }
 
         Spawner?.DecreaseCount(this);
@@ -836,11 +839,17 @@ public class Npc : Unit
             if ((Template.EngageCombatGiveQuestId > 0) && player is not null)
             {
                 if (!player.Quests.IsQuestComplete(Template.EngageCombatGiveQuestId) && !player.Quests.HasQuest(Template.EngageCombatGiveQuestId))
-                    player.Quests.AddStart(Template.EngageCombatGiveQuestId);
+                    player.Quests.Add(Template.EngageCombatGiveQuestId);
             }
         }
 
-        player?.Quests.OnAggro(this);
+        if (player == null)
+        {
+            return;
+        }
+        //player?.Quests.OnAggro(this);
+        // инициируем событие
+        Task.Run(() => QuestManager.Instance.DoOnAggroEvents(player, this));
     }
 
     public void ClearAggroOfUnit(Unit unit)

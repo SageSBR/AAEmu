@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
+using System.Threading.Tasks;
 using AAEmu.Commons.Network;
 using AAEmu.Commons.Utils;
 using AAEmu.Commons.Utils.DB;
@@ -1273,7 +1274,10 @@ public partial class Character : Unit, ICharacter
             Abilities.AddActiveExp(exp); // TODO ... or all?
         SendPacket(new SCExpChangedPacket(ObjId, exp, shouldAddAbilityExp));
         CheckLevelUp();
-        Quests.OnLevelUp(); // TODO added for quest Id=5967
+
+        //Quests.OnLevelUp(); // TODO added for quest Id=5967
+        // инициируем событие
+        Task.Run(() => QuestManager.Instance.DoOnLevelUpEvents(Connection.ActiveChar));
     }
 
     public void CheckLevelUp()
@@ -1567,7 +1571,13 @@ public partial class Character : Unit, ICharacter
         var item = Inventory.GetItemById(id);
         if (item is { Count: > 0 })
         {
-            Quests.OnItemUse(item);
+            //Quests.OnItemUse(item);
+            // инициируем событие
+            Events?.OnItemUse(this, new OnItemUseArgs
+            {
+                ItemId = item.TemplateId,
+                Count = item.Count
+            });
         }
     }
 

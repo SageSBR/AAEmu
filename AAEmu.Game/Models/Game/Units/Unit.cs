@@ -342,7 +342,8 @@ public class Unit : BaseUnit, IUnit
             return;
         }
 
-        ((Unit)attacker).Events.OnKill(attacker, new OnKillArgs { target = (Unit)attacker });
+        ((Unit)attacker)?.Events?.OnKill(attacker, new OnKillArgs { target = this });
+
         DoDie(attacker, killReason);
     }
 
